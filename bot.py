@@ -10,7 +10,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🎵 Музыкальный бот\n\n"
         "Напиши название трека или исполнителя — я найду и пришлю музыку.\n\n"
-        "Например: Radiohead Creep"
+        "Например: Radiohead - Creep"
     )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
@@ -36,10 +36,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 info = info["entries"][0]
             filename = ydl.prepare_filename(info).replace(".webm", ".mp3").replace(".m4a", ".mp3")
 
-    title = info.get("title", query)
-    duration = int(info.get("duration", 0))
-    minutes = duration // 60
-    seconds = duration % 60
+        title = info.get("title", query)
+        duration = info.get("duration", 0)
+        minutes = duration // 60
+        seconds = duration % 60
 
         await searching.delete()
         await update.message.reply_text(f"✅ Нашёл: {title} ({minutes}:{seconds:02d})")
@@ -56,10 +56,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await searching.delete()
-        await update.message.reply_text(
-            "😕 Не удалось найти трек.\n"
-            "Попробуйте уточнить запрос, например: «Arctic Monkeys Do I Wanna Know»"
-        )
+        await update.message.reply_text(f"Ошибка: {e}")
 
 app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
