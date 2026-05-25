@@ -9,8 +9,9 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 TOKEN = os.getenv("TOKEN")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    result = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True)
-    await update.message.reply_text(f"ffmpeg путь: {result.stdout or 'не найден'}")
+    import subprocess
+    result = subprocess.run(["find", "/nix", "-name", "ffmpeg", "-type", "f"], capture_output=True, text=True)
+    await update.message.reply_text(f"ffmpeg: {result.stdout[:500] or 'не найден'}")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text
