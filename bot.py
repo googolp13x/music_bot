@@ -1,6 +1,8 @@
 import os
 import subprocess
 import yt_dlp
+import imageio_ffmpeg
+FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
@@ -19,7 +21,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "outtmpl": "/tmp/%(title)s.%(ext)s",
         "default_search": "scsearch1",
         "quiet": True,
-        "ffmpeg_location": "/usr/bin/ffmpeg",
+        "ffmpeg_location": FFMPEG_PATH,
         "postprocessors": [{
             "key": "FFmpegExtractAudio",
             "preferredcodec": "mp3",
