@@ -46,7 +46,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text(
             f"✅ {title} ({minutes}:{seconds:02d})\n"
             f"──────────────\n"
-            f"🎧 @ggp1xmusic\\_bot\n"
+            f"🎧 @ggp1xmusic\n"
             f"📻 your personal music bot"
         )
 
