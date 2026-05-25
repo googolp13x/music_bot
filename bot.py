@@ -11,11 +11,14 @@ TOKEN = os.getenv("TOKEN")
 FFMPEG_PATH = "/nix/store/zcbf5d79fdqbg26y8q186x60pqlc4ij6-ffmpeg-7.1-bin/bin/ffmpeg"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text("🎵 Напиши название трека!")
+    await update.message.reply_text(
+        "🎵 Music Bot\n\n"
+        "Send me a track or artist name — I'll find and send the music.\n\n"
+        "Example: Radiohead Creep")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text
-    searching = await update.message.reply_text(f"🔍 Ищу «{query}»...")
+    searching = await update.message.reply_text(f"🔍 Searching «{query}»...")
 
     options = {
         "format": "bestaudio/best",
