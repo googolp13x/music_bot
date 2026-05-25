@@ -16,11 +16,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(f"Ищу «{query}»...")
 
     # Настройки поиска и скачивания
-    options = {
+options = {
     "format": "bestaudio/best",
     "outtmpl": "/tmp/%(title)s.%(ext)s",
-    "default_search": "scsearch1",  # ищем на SoundCloud
+    "default_search": "scsearch1",
     "quiet": True,
+    "ffmpeg_location": "/usr/bin/ffmpeg",
     "postprocessors": [{
         "key": "FFmpegExtractAudio",
         "preferredcodec": "mp3",
