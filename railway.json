@@ -1,0 +1,9 @@
+{
+  "build": {
+    "builder": "NIXPACKS",
+    "buildCommand": "apt-get install -y ffmpeg || true"
+  },
+  "deploy": {
+    "startCommand": "python3 bot.py"
+  }
+}
