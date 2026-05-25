@@ -36,10 +36,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 info = info["entries"][0]
             filename = ydl.prepare_filename(info).replace(".webm", ".mp3").replace(".m4a", ".mp3")
 
-        title = info.get("title", query)
-	duration = int(info.get("duration", 0))
-	minutes = duration // 60
-	seconds = duration % 60
+    title = info.get("title", query)
+    duration = int(info.get("duration", 0))
+    minutes = duration // 60
+    seconds = duration % 60
 
         await searching.delete()
         await update.message.reply_text(f"✅ Нашёл: {title} ({minutes}:{seconds:02d})")
