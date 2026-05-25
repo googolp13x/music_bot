@@ -1,21 +1,21 @@
 import os
-import subprocess
 import yt_dlp
-import imageio_ffmpeg
-FFMPEG_PATH = imageio_ffmpeg.get_ffmpeg_exe()
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 TOKEN = os.getenv("TOKEN")
+FFMPEG_PATH = "/nix/store/zcbf5d79fdqbg26y8q186x60pqlc4ij6-ffmpeg-7.1-bin/bin/ffmpeg"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    import subprocess
-    result = subprocess.run(["find", "/nix", "-name", "ffmpeg", "-type", "f"], capture_output=True, text=True)
-    await update.message.reply_text(f"ffmpeg: {result.stdout[:500] or 'не найден'}")
+    await update.message.reply_text(
+        "🎵 Музыкальный бот\n\n"
+        "Напиши название трека или исполнителя — я найду и пришлю музыку.\n\n"
+        "Например: Radiohead Creep"
+    )
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text
-    await update.message.reply_text(f"Ищу «{query}»...")
+    searching = await update.message.reply_text(f"🔍 Ищу «{query}»...")
 
     options = {
         "format": "bestaudio/best",
@@ -36,15 +36,34 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 info = info["entries"][0]
             filename = ydl.prepare_filename(info).replace(".webm", ".mp3").replace(".m4a", ".mp3")
 
+        title = info.get("title", query)
+        duration = info.get("duration", 0)
+        minutes = duration // 60
+        seconds = duration % 60
+
+        await searching.delete()
+        await update.message.reply_text(f"✅ Нашёл: {title} ({minutes}:{seconds:02d})")
+
         with open(filename, "rb") as audio:
-            await update.message.reply_audio(audio, title=info.get("title", query))
+            await update.message.reply_audio(
+                audio,
+                title=title,
+                performer=info.get("uploader", ""),
+                duration=duration,
+            )
+
+        os.remove(filename)
 
     except Exception as e:
-        await update.message.reply_text(f"Ошибка: {e}")
+        await searching.delete()
+        await update.message.reply_text(
+            "😕 Не удалось найти трек.\n"
+            "Попробуйте уточнить запрос, например: «Arctic Monkeys Do I Wanna Know»"
+        )
 
 app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
-app.add_handler(MessageHandler(filters.TEXT, handle_message))
+app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
 print("Бот запущен!")
 app.run_polling()
