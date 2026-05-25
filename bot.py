@@ -2,6 +2,7 @@ import os
 import yt_dlp
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram.request import HTTPXRequest
 
 TOKEN = os.getenv("TOKEN")
 FFMPEG_PATH = "/nix/store/zcbf5d79fdqbg26y8q186x60pqlc4ij6-ffmpeg-7.1-bin/bin/ffmpeg"
@@ -55,18 +56,19 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
                 title=title,
                 performer=info.get("uploader", ""),
                 duration=duration,
+                read_timeout=120,
+                write_timeout=120,
+                connect_timeout=120,
             )
 
         os.remove(filename)
 
     except Exception as e:
         await searching.delete()
-        await update.message.reply_text(
-            "😕 Could not find the track.\n"
-            "Try a more specific search, e.g. «Arctic Monkeys Do I Wanna Know»"
-        )
+        await update.message.reply_text(f"Ошибка: {e}")
 
-app = ApplicationBuilder().token(TOKEN).build()
+request = HTTPXRequest(read_timeout=120, write_timeout=120, connect_timeout=120)
+app = ApplicationBuilder().token(TOKEN).request(request).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
 
