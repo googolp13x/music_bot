@@ -14,7 +14,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
         "🎵 SKMusic Bot\n\n"
         "Send me a track or artist name — I'll find and send the music.\n\n"
-        "Example: Yung Lean Highway Patrol")
+        "Example: Yung Lean Highway Patrol.")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text
