@@ -1,4 +1,5 @@
 import os
+import subprocess
 import yt_dlp
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
@@ -6,10 +7,8 @@ from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, fil
 TOKEN = os.getenv("TOKEN")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "Привет! Я музыкальный бот 🎵\n"
-        "Напиши название трека или исполнителя."
-    )
+    result = subprocess.run(["which", "ffmpeg"], capture_output=True, text=True)
+    await update.message.reply_text(f"ffmpeg путь: {result.stdout or 'не найден'}")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text
