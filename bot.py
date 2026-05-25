@@ -1,17 +1,17 @@
 import os
+import logging
 import yt_dlp
 from telegram import Update
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+
+logging.basicConfig(level=logging.DEBUG)
+logger = logging.getLogger(__name__)
 
 TOKEN = os.getenv("TOKEN")
 FFMPEG_PATH = "/nix/store/zcbf5d79fdqbg26y8q186x60pqlc4ij6-ffmpeg-7.1-bin/bin/ffmpeg"
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    await update.message.reply_text(
-        "🎵 Музыкальный бот\n\n"
-        "Напиши название трека или исполнителя — я найду и пришлю музыку.\n\n"
-        "Например: Radiohead - Creep"
-    )
+    await update.message.reply_text("🎵 Напиши название трека!")
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text
@@ -21,7 +21,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "format": "bestaudio/best",
         "outtmpl": "/tmp/%(title)s.%(ext)s",
         "default_search": "scsearch1",
-        "quiet": True,
+        "quiet": False,
         "ffmpeg_location": FFMPEG_PATH,
         "postprocessors": [{
             "key": "FFmpegExtractAudio",
@@ -30,31 +30,24 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     }
 
     try:
+        logger.info(f"Начинаю поиск: {query}")
         with yt_dlp.YoutubeDL(options) as ydl:
             info = ydl.extract_info(query, download=True)
+            logger.info(f"Скачал, info keys: {list(info.keys())}")
             if "entries" in info:
                 info = info["entries"][0]
             filename = ydl.prepare_filename(info).replace(".webm", ".mp3").replace(".m4a", ".mp3")
-
-        title = info.get("title", query)
-        duration = info.get("duration", 0)
-        minutes = duration // 60
-        seconds = duration % 60
+            logger.info(f"Файл: {filename}")
 
         await searching.delete()
-        await update.message.reply_text(f"✅ Нашёл: {title} ({minutes}:{seconds:02d})")
 
         with open(filename, "rb") as audio:
-            await update.message.reply_audio(
-                audio,
-                title=title,
-                performer=info.get("uploader", ""),
-                duration=duration,
-            )
+            await update.message.reply_audio(audio, title=info.get("title", query))
 
         os.remove(filename)
 
     except Exception as e:
+        logger.error(f"Ошибка: {e}", exc_info=True)
         await searching.delete()
         await update.message.reply_text(f"Ошибка: {e}")
 
