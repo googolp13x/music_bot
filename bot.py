@@ -17,15 +17,15 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     # Настройки поиска и скачивания
     options = {
-        "format": "bestaudio/best",
-        "outtmpl": "/tmp/%(title)s.%(ext)s",
-        "default_search": "ytsearch1",  # ищем первый результат на YouTube
-        "quiet": True,
-        "postprocessors": [{
-            "key": "FFmpegExtractAudio",
-            "preferredcodec": "mp3",
-        }],
-    }
+    "format": "bestaudio/best",
+    "outtmpl": "/tmp/%(title)s.%(ext)s",
+    "default_search": "scsearch1",  # ищем на SoundCloud
+    "quiet": True,
+    "postprocessors": [{
+        "key": "FFmpegExtractAudio",
+        "preferredcodec": "mp3",
+    }],
+}
 
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
