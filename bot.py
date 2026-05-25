@@ -37,7 +37,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             filename = ydl.prepare_filename(info).replace(".webm", ".mp3").replace(".m4a", ".mp3")
 
         title = info.get("title", query)
-        duration = info.get("duration", 0)
+        duration = int(info.get("duration", 0))
         minutes = duration // 60
         seconds = duration % 60
 
@@ -61,7 +61,10 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await searching.delete()
-        await update.message.reply_text(f"Ошибка: {e}")
+        await update.message.reply_text(
+            "😕 Could not find the track.\n"
+            "Try a more specific search, e.g. «Arctic Monkeys Do I Wanna Know»"
+        )
 
 app = ApplicationBuilder().token(TOKEN).build()
 app.add_handler(CommandHandler("start", start))
