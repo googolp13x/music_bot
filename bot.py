@@ -108,7 +108,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for e in sc_entries:
         e["_platform"] = "sc"
 
-    yt_entries = _search_platform(query, "ytmsearch", 2)
+    yt_entries = _search_platform(query, "ytsearch", 2)
     for e in yt_entries:
         e["_platform"] = "yt"
 
