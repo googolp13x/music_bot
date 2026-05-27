@@ -25,9 +25,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "❓ How to use SKMusic Bot:\n\n"
         "Just type the name of a track or artist and I'll find it for you.\n\n"
         "Examples:\n"
-        "• Radiohead Creep\n"
+        "• Aphex Twin - alberto balsalm\n"
         "• Yung Lean Highway Patrol\n"
-        "• Arctic Monkeys\n\n"
+        "• A$AP Rocky\n\n"
         "The bot searches SoundCloud and sends the audio directly to this chat.",
         reply_markup=KEYBOARD
     )
