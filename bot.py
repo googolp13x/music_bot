@@ -37,7 +37,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     user = update.message.from_user
     username = f"@{user.username}" if user.username else user.first_name
     await context.bot.send_message(
-        chat_id="ВАШ_TELEGRAM_ID",
+        chat_id="googolp1ex",
         text=f"🔍 {username} ищет: {query}"
     )
 
