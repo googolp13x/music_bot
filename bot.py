@@ -10,6 +10,18 @@ from telegram.request import HTTPXRequest
 TOKEN = os.getenv("TOKEN")
 FFMPEG_PATH = "/nix/store/zcbf5d79fdqbg26y8q186x60pqlc4ij6-ffmpeg-7.1-bin/bin/ffmpeg"
 
+# Optional: set YOUTUBE_COOKIES env var with the contents of a cookies.txt file
+# to bypass YouTube bot detection (export from browser via "Get cookies.txt" extension)
+COOKIES_FILE = "/tmp/yt_cookies.txt"
+_raw_cookies = os.getenv("YOUTUBE_COOKIES", "")
+if _raw_cookies:
+    with open(COOKIES_FILE, "w") as _f:
+        _f.write(_raw_cookies)
+else:
+    COOKIES_FILE = None
+
+YT_EXTRACTOR_ARGS = {"youtube": {"player_client": ["android", "ios"]}}
+
 KEYBOARD = ReplyKeyboardMarkup(
     [[KeyboardButton("🔍 Find"), KeyboardButton("❓ Help")]],
     resize_keyboard=True
@@ -43,14 +55,25 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     )
 
 
+def _yt_base_options(extra: dict = None) -> dict:
+    opts = {
+        "extractor_args": YT_EXTRACTOR_ARGS,
+        "quiet": True,
+    }
+    if COOKIES_FILE:
+        opts["cookiefile"] = COOKIES_FILE
+    if extra:
+        opts.update(extra)
+    return opts
+
+
 def _search_platform(query: str, search_prefix: str, limit: int) -> list:
-    options = {
+    options = _yt_base_options({
         "format": "bestaudio/best",
         "default_search": f"{search_prefix}{limit}",
-        "quiet": True,
         "extract_flat": "in_playlist",
         "noplaylist": False,
-    }
+    })
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
             info = ydl.extract_info(query, download=False)
@@ -129,17 +152,16 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     tmpdir = tempfile.mkdtemp()
 
-    options = {
+    options = _yt_base_options({
         "format": "bestaudio/best",
         "outtmpl": f"{tmpdir}/%(title)s.%(ext)s",
-        "quiet": True,
         "ffmpeg_location": FFMPEG_PATH,
         "writethumbnail": True,
         "postprocessors": [
             {"key": "FFmpegExtractAudio", "preferredcodec": "mp3"},
             {"key": "FFmpegThumbnailsConvertor", "format": "jpg"},
         ],
-    }
+    })
 
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
