@@ -23,10 +23,12 @@ _raw_cookies = os.getenv("YOUTUBE_COOKIES", "")
 if _raw_cookies:
     with open(COOKIES_FILE, "w") as _f:
         _f.write(_raw_cookies)
+    logging.info("Cookies loaded: %d bytes, %d lines", len(_raw_cookies), _raw_cookies.count("\n"))
 else:
     COOKIES_FILE = None
+    logging.warning("YOUTUBE_COOKIES not set — running without cookies")
 
-YT_EXTRACTOR_ARGS = {"youtube": {"player_client": ["android_music", "android", "mweb"]}}
+YT_EXTRACTOR_ARGS = {"youtube": {"player_client": ["tv_embedded", "web_embedded", "android"]}}
 
 KEYBOARD = ReplyKeyboardMarkup(
     [[KeyboardButton("🔍 Find"), KeyboardButton("❓ Help")]],
