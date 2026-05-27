@@ -1,8 +1,14 @@
+import logging
 import os
 import glob
 import shutil
 import tempfile
 import yt_dlp
+
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s [%(levelname)s] %(message)s",
+)
 from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from telegram.request import HTTPXRequest
@@ -20,7 +26,7 @@ if _raw_cookies:
 else:
     COOKIES_FILE = None
 
-YT_EXTRACTOR_ARGS = {"youtube": {"player_client": ["android", "ios"]}}
+YT_EXTRACTOR_ARGS = {"youtube": {"player_client": ["android_music", "android", "mweb"]}}
 
 KEYBOARD = ReplyKeyboardMarkup(
     [[KeyboardButton("🔍 Find"), KeyboardButton("❓ Help")]],
@@ -102,7 +108,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     for e in sc_entries:
         e["_platform"] = "sc"
 
-    yt_entries = _search_platform(query, "ytsearch", 2)
+    yt_entries = _search_platform(query, "ytmsearch", 2)
     for e in yt_entries:
         e["_platform"] = "yt"
 
@@ -207,8 +213,9 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if thumb:
                 thumb.close()
 
-    except Exception:
-        await query.edit_message_text("😕 Could not download. Try another track.")
+    except Exception as e:
+        logging.error("Download error for url=%s: %s", url, e, exc_info=True)
+        await query.edit_message_text(f"😕 Could not download. Try another track.")
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
 
