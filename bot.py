@@ -34,6 +34,12 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text
+    user = update.message.from_user
+    username = f"@{user.username}" if user.username else user.first_name
+    await context.bot.send_message(
+        chat_id="ВАШ_TELEGRAM_ID",
+        text=f"🔍 {username} ищет: {query}"
+    )
 
     if query == "▶️ Start":
         await start(update, context)
