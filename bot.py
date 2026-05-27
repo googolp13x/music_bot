@@ -1,7 +1,7 @@
 import os
 import yt_dlp
-from telegram import Update, ReplyKeyboardMarkup, KeyboardButton
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
+from telegram import Update, ReplyKeyboardMarkup, KeyboardButton, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, CallbackQueryHandler, filters, ContextTypes
 from telegram.request import HTTPXRequest
 
 TOKEN = os.getenv("TOKEN")
@@ -14,9 +14,10 @@ KEYBOARD = ReplyKeyboardMarkup(
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "🎵 SKMusic Bot\n\n"
-        "Send me a track or artist name — I'll find and send the music.\n\n"
-        "Example: Yung Lean Highway Patrol.",
+        "👋 Welcome to SKMusic Bot!\n\n"
+        "🎵 Just type any track or artist name and I'll find the music for you.\n\n"
+        "Example: Yung Lean Highway Patrol\n\n"
+        "Use the buttons below to get started 👇",
         reply_markup=KEYBOARD
     )
 
@@ -25,9 +26,9 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "❓ How to use SKMusic Bot:\n\n"
         "Just type the name of a track or artist and I'll find it for you.\n\n"
         "Examples:\n"
-        "• Aphex Twin - alberto balsalm\n"
+        "• Aphex Twin Flim\n"
         "• Yung Lean Highway Patrol\n"
-        "• A$AP Rocky\n\n"
+        "• Arctic Monkeys\n\n"
         "The bot searches SoundCloud and sends the audio directly to this chat.",
         reply_markup=KEYBOARD
     )
@@ -47,8 +48,65 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     options = {
         "format": "bestaudio/best",
+        "default_search": "scsearch5",
+        "quiet": True,
+        "extract_flat": True,
+    }
+
+    try:
+        with yt_dlp.YoutubeDL(options) as ydl:
+            info = ydl.extract_info(query, download=False)
+            entries = info.get("entries", [])
+
+        if not entries:
+            await searching.delete()
+            await update.message.reply_text("😕 Nothing found. Try a different search.")
+            return
+
+        # Сохраняем результаты в контексте пользователя
+        context.user_data["results"] = entries
+
+        # Строим кнопки
+        buttons = []
+        for i, entry in enumerate(entries[:5]):
+            title = entry.get("title", "Unknown")[:50]
+            duration = int(entry.get("duration") or 0)
+            minutes = duration // 60
+            seconds = duration % 60
+            buttons.append([InlineKeyboardButton(
+                f"{i+1}. {title} ({minutes}:{seconds:02d})",
+                callback_data=str(i)
+            )])
+
+        await searching.delete()
+        await update.message.reply_text(
+            "🎵 Choose a track:",
+            reply_markup=InlineKeyboardMarkup(buttons)
+        )
+
+    except Exception as e:
+        await searching.delete()
+        await update.message.reply_text(f"😕 Could not find the track. Try again.")
+
+async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
+
+    index = int(query.data)
+    results = context.user_data.get("results", [])
+
+    if not results or index >= len(results):
+        await query.edit_message_text("❌ Something went wrong. Search again.")
+        return
+
+    entry = results[index]
+    url = entry.get("url") or entry.get("webpage_url")
+
+    await query.edit_message_text(f"⬇️ Downloading...")
+
+    options = {
+        "format": "bestaudio/best",
         "outtmpl": "/tmp/%(title)s.%(ext)s",
-        "default_search": "scsearch1",
         "quiet": True,
         "ffmpeg_location": FFMPEG_PATH,
         "postprocessors": [{
@@ -59,28 +117,25 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     try:
         with yt_dlp.YoutubeDL(options) as ydl:
-            info = ydl.extract_info(query, download=True)
-            if "entries" in info:
-                info = info["entries"][0]
+            info = ydl.extract_info(url, download=True)
             filename = ydl.prepare_filename(info).replace(".webm", ".mp3").replace(".m4a", ".mp3")
 
-        title = info.get("title", query)
+        title = info.get("title", "Unknown")
         duration = int(info.get("duration", 0))
         minutes = duration // 60
         seconds = duration % 60
 
-        await searching.delete()
-        await update.message.reply_text(
+        await query.edit_message_text(
             f"✅ {title} ({minutes}:{seconds:02d})\n"
             f"──────────────\n"
             f"🎧 @ggp1xmusic\\_bot\n"
-            f"📻 your personal music bot",
-            reply_markup=KEYBOARD
+            f"📻 your personal music bot"
         )
 
         with open(filename, "rb") as audio:
-            await update.message.reply_audio(
-                audio,
+            await context.bot.send_audio(
+                chat_id=query.message.chat_id,
+                audio=audio,
                 title=title,
                 performer=info.get("uploader", ""),
                 duration=duration,
@@ -92,18 +147,14 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         os.remove(filename)
 
     except Exception as e:
-        await searching.delete()
-        await update.message.reply_text(
-            "😕 Could not find the track.\n"
-            "Try a more specific search, e.g. «Arctic Monkeys Do I Wanna Know»",
-            reply_markup=KEYBOARD
-        )
+        await query.edit_message_text("😕 Could not download. Try another track.")
 
 request = HTTPXRequest(read_timeout=120, write_timeout=120, connect_timeout=120)
 app = ApplicationBuilder().token(TOKEN).request(request).build()
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("help", help_command))
 app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
+app.add_handler(CallbackQueryHandler(handle_choice))
 
 print("Bot started!")
 app.run_polling()
