@@ -8,7 +8,7 @@ TOKEN = os.getenv("TOKEN")
 FFMPEG_PATH = "/nix/store/zcbf5d79fdqbg26y8q186x60pqlc4ij6-ffmpeg-7.1-bin/bin/ffmpeg"
 
 KEYBOARD = ReplyKeyboardMarkup(
-    [[KeyboardButton("▶️ Start"), KeyboardButton("❓ Help")]],
+    [[KeyboardButton("🔍 Find"), KeyboardButton("❓ Help")]],
     resize_keyboard=True
 )
 
@@ -36,8 +36,11 @@ async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.message.text
 
-    if query == "▶️ Start":
-        await start(update, context)
+    if query == "🔍 Find":
+        await update.message.reply_text(
+            "🎵 Type the track or artist name:",
+            reply_markup=KEYBOARD
+        )
         return
 
     if query == "❓ Help":
@@ -50,7 +53,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         "format": "bestaudio/best",
         "default_search": "scsearch5",
         "quiet": True,
-        "extract_flat": True,
+        "extract_flat": "in_playlist",
+        "noplaylist": False,
     }
 
     try:
@@ -63,10 +67,8 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
             await update.message.reply_text("😕 Nothing found. Try a different search.")
             return
 
-        # Сохраняем результаты в контексте пользователя
         context.user_data["results"] = entries
 
-        # Строим кнопки
         buttons = []
         for i, entry in enumerate(entries[:5]):
             title = entry.get("title", "Unknown")[:50]
@@ -86,7 +88,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     except Exception as e:
         await searching.delete()
-        await update.message.reply_text(f"😕 Could not find the track. Try again.")
+        await update.message.reply_text("😕 Could not find the track. Try again.")
 
 async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
@@ -102,7 +104,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     entry = results[index]
     url = entry.get("url") or entry.get("webpage_url")
 
-    await query.edit_message_text(f"⬇️ Downloading...")
+    await query.edit_message_text("⬇️ Downloading...")
 
     options = {
         "format": "bestaudio/best",
