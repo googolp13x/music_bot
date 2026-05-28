@@ -190,10 +190,18 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         minutes = duration // 60
         seconds = duration % 60
 
+        file_size = os.path.getsize(filename)
+        if file_size > 50 * 1024 * 1024:
+            await query.edit_message_text(
+                "📦 Track is too large for Telegram (>50 MB).\n"
+                "Try a different version or a shorter track."
+            )
+            return
+
         await query.edit_message_text(
             f"✅ {title} ({minutes}:{seconds:02d})\n"
             f"──────────────\n"
-            f"🎧 @ggp1xmusic\\_bot\n"
+            f"🎧 @ggp1xmusic\n"
             f"📻 your personal music bot"
         )
 
@@ -215,9 +223,24 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             if thumb:
                 thumb.close()
 
+    except yt_dlp.utils.DownloadError as e:
+        logging.error("Download error for url=%s: %s", url, e)
+        err = str(e).lower()
+        if "sign in" in err or "bot" in err:
+            msg = "🔒 YouTube blocked this download. Try a 🟢 SoundCloud track instead."
+        elif "private" in err or "unavailable" in err or "deleted" in err:
+            msg = "🚫 This track is private or no longer available."
+        elif "age" in err:
+            msg = "🔞 Age-restricted track, cannot download."
+        elif "copyright" in err or "blocked" in err:
+            msg = "⛔️ This track is blocked due to copyright. Try another."
+        else:
+            msg = "😕 Could not download. Try another track."
+        await query.edit_message_text(msg)
+
     except Exception as e:
-        logging.error("Download error for url=%s: %s", url, e, exc_info=True)
-        await query.edit_message_text(f"😕 Could not download. Try another track.")
+        logging.error("Unexpected error for url=%s: %s", url, e, exc_info=True)
+        await query.edit_message_text("⚠️ Something went wrong. Please try again.")
     finally:
         shutil.rmtree(tmpdir, ignore_errors=True)
 
