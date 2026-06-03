@@ -201,7 +201,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(
             f"✅ {title} ({minutes}:{seconds:02d})\n"
             f"──────────────\n"
-            f"🎧 @ggp1xmusic\n"
+            f"🎧 @ggp1xmusic_bot\n"
             f"📻 your personal music bot"
         )
 
