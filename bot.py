@@ -122,25 +122,35 @@ PLATFORM_EMOJI = {"sc": "🟢", "yt": "🔴"}
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "👋 Welcome to SKMusic Bot!\n\n"
-        "🎵 Just type any track or artist name and I'll find the music for you.\n\n"
-        "Example: Yung Lean Highway Patrol\n\n"
-        "🟢 SoundCloud  🔴 YouTube\n\n"
-        "Use the buttons below to get started 👇",
+        "🎵 <b>Muze</b>\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "Напиши название трека или исполнителя — я найду музыку и пришлю аудио прямо сюда.\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "<b>Источники:</b>\n"
+        "🟢 SoundCloud  ·  🔴 YouTube\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "<b>Попробуй:</b>\n"
+        "<i>Yung Lean Highway Patrol</i>",
+        parse_mode="HTML",
         reply_markup=KEYBOARD
     )
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "❓ How to use SKMusic Bot:\n\n"
-        "Just type the name of a track or artist and I'll find it for you.\n\n"
-        "Examples:\n"
-        "• Aphex Twin Flim\n"
-        "• Yung Lean Highway Patrol\n"
-        "• Arctic Monkeys\n\n"
-        "🟢 SoundCloud and 🔴 YouTube results are shown together.\n"
-        "Pick a track and I'll send the audio directly to this chat.",
+        "❓ <b>Как пользоваться</b>\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "1️⃣  <b>Напиши</b> название трека или артиста\n"
+        "2️⃣  <b>Выбери</b> трек из результатов\n"
+        "3️⃣  <b>Получи</b> MP3 прямо в чат\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "<b>Примеры:</b>\n"
+        "· <code>Aphex Twin Flim</code>\n"
+        "· <code>Yung Lean Highway Patrol</code>\n"
+        "· <code>Arctic Monkeys</code>\n"
+        "━━━━━━━━━━━━━━━━━━━\n"
+        "🟢 SoundCloud  ·  🔴 YouTube",
+        parse_mode="HTML",
         reply_markup=KEYBOARD
     )
 
@@ -273,11 +283,15 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             )
             return
 
+        platform_label = "🟢 SoundCloud" if entry.get("_platform") == "sc" else "🔴 YouTube"
         await query.edit_message_text(
-            f"✅ {title} ({minutes}:{seconds:02d})\n"
-            f"──────────────\n"
-            f"🎧 @ggp1xmusic\n"
-            f"📻 your personal music bot"
+            f"✅ <b>{title}</b>\n"
+            f"━━━━━━━━━━━━━━━━━━━\n"
+            f"⏱ {minutes}:{seconds:02d}  ·  {platform_label}\n"
+            f"🎤 {info.get('uploader', '—')}\n"
+            f"━━━━━━━━━━━━━━━━━━━\n"
+            f"🎧 @ggp1xmusic",
+            parse_mode="HTML"
         )
 
         thumb = open(thumb_file, "rb") if thumb_file else None
