@@ -22,8 +22,6 @@ logging.basicConfig(
 TOKEN = os.getenv("TOKEN")
 FFMPEG_PATH = "/nix/store/zcbf5d79fdqbg26y8q186x60pqlc4ij6-ffmpeg-7.1-bin/bin/ffmpeg"
 
-# Set YOUTUBE_COOKIES env var with the contents of a cookies.txt file
-# to bypass YouTube bot detection (export via "Get cookies.txt" browser extension)
 COOKIES_FILE = "/tmp/yt_cookies.txt"
 _raw_cookies = os.getenv("YOUTUBE_COOKIES", "")
 if _raw_cookies:
@@ -36,9 +34,120 @@ else:
 
 YT_EXTRACTOR_ARGS = {"youtube": {"player_client": ["tv_embedded", "web_embedded", "android"]}}
 
+# ── Localization ──────────────────────────────────────────────────────────────
+
+STRINGS = {
+    "en": {
+        "start": (
+            "🎵 <b>Muze</b>\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "Type a track or artist name — I'll find the music and send it right here.\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "<b>Sources:</b>\n"
+            "🟢 SoundCloud  ·  🔴 YouTube\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "<b>Try:</b>\n"
+            "<i>Yung Lean Highway Patrol</i>"
+        ),
+        "help": (
+            "❓ <b>How to use Muze</b>\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "1️⃣  <b>Type</b> a track or artist name\n"
+            "2️⃣  <b>Choose</b> a track from results\n"
+            "3️⃣  <b>Get</b> MP3 right in chat\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "<b>Examples:</b>\n"
+            "· <code>Aphex Twin Flim</code>\n"
+            "· <code>Yung Lean Highway Patrol</code>\n"
+            "· <code>Arctic Monkeys</code>\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "🟢 SoundCloud  ·  🔴 YouTube"
+        ),
+        "btn_find":     "🔍 Find",
+        "btn_help":     "❓ Help",
+        "type_query":   "🎵 Type the track or artist name:",
+        "searching":    "🔍 Searching «{}»...",
+        "choose_track": "🎵 Choose a track:\n🟢 SoundCloud  ·  🔴 YouTube",
+        "not_found":    "😕 Nothing found. Try a different search.",
+        "downloading":  "⬇️ Downloading...",
+        "too_large":    "📦 Track is too large for Telegram (>50 MB).\nTry a shorter version.",
+        "wrong":        "❌ Something went wrong. Search again.",
+        "cooldown":     "⏳ Please wait {}s before searching again.",
+        "busy":         "⏳ Your previous download is still in progress.",
+        "err_blocked":  "🔒 YouTube blocked this download. Try a 🟢 SoundCloud track.",
+        "err_private":  "🚫 This track is private or no longer available.",
+        "err_age":      "🔞 Age-restricted track, cannot download.",
+        "err_copyright":"⛔️ Blocked due to copyright. Try another track.",
+        "err_download": "😕 Could not download. Try another track.",
+        "err_unknown":  "⚠️ Something went wrong. Please try again.",
+    },
+    "ru": {
+        "start": (
+            "🎵 <b>Muze</b>\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "Напиши название трека или исполнителя — я найду музыку и пришлю аудио прямо сюда.\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "<b>Источники:</b>\n"
+            "🟢 SoundCloud  ·  🔴 YouTube\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "<b>Попробуй:</b>\n"
+            "<i>Yung Lean Highway Patrol</i>"
+        ),
+        "help": (
+            "❓ <b>Как пользоваться Muze</b>\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "1️⃣  <b>Напиши</b> название трека или артиста\n"
+            "2️⃣  <b>Выбери</b> трек из результатов\n"
+            "3️⃣  <b>Получи</b> MP3 прямо в чат\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "<b>Примеры:</b>\n"
+            "· <code>Aphex Twin Flim</code>\n"
+            "· <code>Yung Lean Highway Patrol</code>\n"
+            "· <code>Arctic Monkeys</code>\n"
+            "━━━━━━━━━━━━━━━━━━━\n"
+            "🟢 SoundCloud  ·  🔴 YouTube"
+        ),
+        "btn_find":     "🔍 Найти",
+        "btn_help":     "❓ Помощь",
+        "type_query":   "🎵 Напиши название трека или артиста:",
+        "searching":    "🔍 Ищу «{}»...",
+        "choose_track": "🎵 Выбери трек:\n🟢 SoundCloud  ·  🔴 YouTube",
+        "not_found":    "😕 Ничего не найдено. Попробуй другой запрос.",
+        "downloading":  "⬇️ Скачиваю...",
+        "too_large":    "📦 Трек слишком большой для Telegram (>50 МБ).\nПопробуй более короткую версию.",
+        "wrong":        "❌ Что-то пошло не так. Поищи снова.",
+        "cooldown":     "⏳ Подожди {}с перед следующим поиском.",
+        "busy":         "⏳ Предыдущая загрузка ещё не завершена.",
+        "err_blocked":  "🔒 YouTube заблокировал загрузку. Попробуй 🟢 SoundCloud.",
+        "err_private":  "🚫 Этот трек приватный или недоступен.",
+        "err_age":      "🔞 Трек с возрастным ограничением, загрузка невозможна.",
+        "err_copyright":"⛔️ Трек заблокирован из-за авторских прав. Попробуй другой.",
+        "err_download": "😕 Не удалось скачать. Попробуй другой трек.",
+        "err_unknown":  "⚠️ Что-то пошло не так. Попробуй ещё раз.",
+    },
+}
+
+
+def get_lang(user) -> str:
+    code = (user.language_code or "en")[:2].lower()
+    return code if code in STRINGS else "en"
+
+
+def t(key: str, lang: str, *args) -> str:
+    s = STRINGS.get(lang, STRINGS["en"]).get(key) or STRINGS["en"].get(key, key)
+    return s.format(*args) if args else s
+
+
+def make_keyboard(lang: str) -> ReplyKeyboardMarkup:
+    return ReplyKeyboardMarkup(
+        [[KeyboardButton(t("btn_find", lang)), KeyboardButton(t("btn_help", lang))]],
+        resize_keyboard=True,
+    )
+
+
 # ── Search cache ──────────────────────────────────────────────────────────────
 
-CACHE_TTL = 600  # 10 minutes
+CACHE_TTL = 600
 _search_cache: dict = {}
 
 
@@ -54,26 +163,23 @@ def _cache_get(query: str) -> list | None:
 
 def _cache_set(query: str, entries: list) -> None:
     now = time.time()
-    expired = [k for k, (ts, _) in _search_cache.items() if now - ts >= CACHE_TTL]
-    for k in expired:
+    for k in [k for k, (ts, _) in _search_cache.items() if now - ts >= CACHE_TTL]:
         del _search_cache[k]
     _search_cache[query.strip().lower()] = (now, entries)
 
 
 # ── Spam protection ───────────────────────────────────────────────────────────
 
-SEARCH_COOLDOWN = 3   # seconds between searches per user
-_last_search: dict = {}       # user_id → timestamp
-_active_downloads: set = set()  # user_ids with a download in progress
+SEARCH_COOLDOWN = 3
+_last_search: dict = {}
+_active_downloads: set = set()
 
 
 def _check_search_cooldown(user_id: int) -> float:
-    """Returns remaining cooldown in seconds, or 0 if ready."""
-    elapsed = time.time() - _last_search.get(user_id, 0)
-    return max(0.0, SEARCH_COOLDOWN - elapsed)
+    return max(0.0, SEARCH_COOLDOWN - (time.time() - _last_search.get(user_id, 0)))
 
 
-# ── Parallel search ───────────────────────────────────────────────────────────
+# ── yt-dlp helpers ────────────────────────────────────────────────────────────
 
 _executor = ThreadPoolExecutor(max_workers=4)
 
@@ -110,72 +216,47 @@ async def _search_async(query: str, search_prefix: str, limit: int, platform: st
     return entries
 
 
-# ── UI ────────────────────────────────────────────────────────────────────────
-
-KEYBOARD = ReplyKeyboardMarkup(
-    [[KeyboardButton("🔍 Find"), KeyboardButton("❓ Help")]],
-    resize_keyboard=True
-)
+# ── Handlers ──────────────────────────────────────────────────────────────────
 
 PLATFORM_EMOJI = {"sc": "🟢", "yt": "🔴"}
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = get_lang(update.message.from_user)
     await update.message.reply_text(
-        "🎵 <b>Muze</b>\n"
-        "━━━━━━━━━━━━━━━━━━━\n"
-        "Напиши название трека или исполнителя — я найду музыку и пришлю аудио прямо сюда.\n"
-        "━━━━━━━━━━━━━━━━━━━\n"
-        "<b>Источники:</b>\n"
-        "🟢 SoundCloud  ·  🔴 YouTube\n"
-        "━━━━━━━━━━━━━━━━━━━\n"
-        "<b>Попробуй:</b>\n"
-        "<i>Yung Lean Highway Patrol</i>",
+        t("start", lang),
         parse_mode="HTML",
-        reply_markup=KEYBOARD
+        reply_markup=make_keyboard(lang),
     )
 
 
 async def help_command(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    lang = get_lang(update.message.from_user)
     await update.message.reply_text(
-        "❓ <b>Как пользоваться</b>\n"
-        "━━━━━━━━━━━━━━━━━━━\n"
-        "1️⃣  <b>Напиши</b> название трека или артиста\n"
-        "2️⃣  <b>Выбери</b> трек из результатов\n"
-        "3️⃣  <b>Получи</b> MP3 прямо в чат\n"
-        "━━━━━━━━━━━━━━━━━━━\n"
-        "<b>Примеры:</b>\n"
-        "· <code>Aphex Twin Flim</code>\n"
-        "· <code>Yung Lean Highway Patrol</code>\n"
-        "· <code>Arctic Monkeys</code>\n"
-        "━━━━━━━━━━━━━━━━━━━\n"
-        "🟢 SoundCloud  ·  🔴 YouTube",
+        t("help", lang),
         parse_mode="HTML",
-        reply_markup=KEYBOARD
+        reply_markup=make_keyboard(lang),
     )
 
 
-# ── Handlers ──────────────────────────────────────────────────────────────────
-
 async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     text = update.message.text
+    user = update.message.from_user
+    lang = get_lang(user)
 
-    if text == "🔍 Find":
-        await update.message.reply_text("🎵 Type the track or artist name:", reply_markup=KEYBOARD)
+    if text == t("btn_find", lang):
+        await update.message.reply_text(t("type_query", lang), reply_markup=make_keyboard(lang))
         return
 
-    if text == "❓ Help":
+    if text == t("btn_help", lang):
         await help_command(update, context)
         return
 
-    user_id = update.message.from_user.id
-
-    # spam protection: cooldown between searches
-    wait = _check_search_cooldown(user_id)
+    wait = _check_search_cooldown(user.id)
     if wait > 0:
-        await update.message.reply_text(f"⏳ Please wait {wait:.0f}s before searching again.")
+        await update.message.reply_text(t("cooldown", lang, f"{wait:.0f}"))
         return
-    _last_search[user_id] = time.time()
+    _last_search[user.id] = time.time()
 
     cached = _cache_get(text)
     if cached:
@@ -183,13 +264,12 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         entries = cached
         searching = None
     else:
-        searching = await update.message.reply_text(f"🔍 Searching «{text}»...")
+        searching = await update.message.reply_text(t("searching", lang, text))
 
-        # parallel search: SoundCloud + YouTube at the same time
-        sc_task = _search_async(text, "scsearch", 3, "sc")
-        yt_task = _search_async(text, "ytsearch", 2, "yt")
-        sc_entries, yt_entries = await asyncio.gather(sc_task, yt_task)
-
+        sc_entries, yt_entries = await asyncio.gather(
+            _search_async(text, "scsearch", 3, "sc"),
+            _search_async(text, "ytsearch", 2, "yt"),
+        )
         entries = sc_entries + yt_entries
         if entries:
             _cache_set(text, entries)
@@ -197,7 +277,7 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if not entries:
         if searching:
             await searching.delete()
-        await update.message.reply_text("😕 Nothing found. Try a different search.")
+        await update.message.reply_text(t("not_found", lang))
         return
 
     context.user_data["results"] = entries
@@ -210,24 +290,24 @@ async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
         minutes, seconds = divmod(duration, 60)
         buttons.append([InlineKeyboardButton(
             f"{platform} {i + 1}. {title} ({minutes}:{seconds:02d})",
-            callback_data=str(i)
+            callback_data=str(i),
         )])
 
     if searching:
         await searching.delete()
     await update.message.reply_text(
-        "🎵 Choose a track:\n🟢 SoundCloud  🔴 YouTube",
-        reply_markup=InlineKeyboardMarkup(buttons)
+        t("choose_track", lang),
+        reply_markup=InlineKeyboardMarkup(buttons),
     )
 
 
 async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     user_id = query.from_user.id
+    lang = get_lang(query.from_user)
 
-    # spam protection: one download at a time per user
     if user_id in _active_downloads:
-        await query.answer("⏳ Your previous download is still in progress.", show_alert=True)
+        await query.answer(t("busy", lang), show_alert=True)
         return
 
     await query.answer()
@@ -236,14 +316,14 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
     results = context.user_data.get("results", [])
 
     if not results or index >= len(results):
-        await query.edit_message_text("❌ Something went wrong. Search again.")
+        await query.edit_message_text(t("wrong", lang))
         return
 
     entry = results[index]
     url = entry.get("url") or entry.get("webpage_url")
 
     _active_downloads.add(user_id)
-    await query.edit_message_text("⬇️ Downloading...")
+    await query.edit_message_text(t("downloading", lang))
 
     tmpdir = tempfile.mkdtemp()
     options = _yt_base_options({
@@ -266,32 +346,29 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         image_files = glob.glob(f"{tmpdir}/*.jpg") + glob.glob(f"{tmpdir}/*.jpeg")
 
         if not audio_files:
-            await query.edit_message_text("😕 Could not download. Try another track.")
+            await query.edit_message_text(t("err_download", lang))
             return
 
         filename = audio_files[0]
         thumb_file = image_files[0] if image_files else None
 
+        if os.path.getsize(filename) > 50 * 1024 * 1024:
+            await query.edit_message_text(t("too_large", lang))
+            return
+
         title = info.get("title", "Unknown")
         duration = int(info.get("duration", 0))
         minutes, seconds = divmod(duration, 60)
-
-        if os.path.getsize(filename) > 50 * 1024 * 1024:
-            await query.edit_message_text(
-                "📦 Track is too large for Telegram (>50 MB).\n"
-                "Try a different version or a shorter track."
-            )
-            return
-
         platform_label = "🟢 SoundCloud" if entry.get("_platform") == "sc" else "🔴 YouTube"
+
         await query.edit_message_text(
             f"✅ <b>{title}</b>\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
             f"⏱ {minutes}:{seconds:02d}  ·  {platform_label}\n"
             f"🎤 {info.get('uploader', '—')}\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"🎧 @ggp1xmusic",
-            parse_mode="HTML"
+            f"🎧 @muzebot",
+            parse_mode="HTML",
         )
 
         thumb = open(thumb_file, "rb") if thumb_file else None
@@ -316,20 +393,20 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
         logging.error("Download error url=%s: %s", url, e)
         err = str(e).lower()
         if "sign in" in err or "bot" in err:
-            msg = "🔒 YouTube blocked this download. Try a 🟢 SoundCloud track instead."
+            msg = t("err_blocked", lang)
         elif "private" in err or "unavailable" in err or "deleted" in err:
-            msg = "🚫 This track is private or no longer available."
+            msg = t("err_private", lang)
         elif "age" in err:
-            msg = "🔞 Age-restricted track, cannot download."
+            msg = t("err_age", lang)
         elif "copyright" in err or "blocked" in err:
-            msg = "⛔️ This track is blocked due to copyright. Try another."
+            msg = t("err_copyright", lang)
         else:
-            msg = "😕 Could not download. Try another track."
+            msg = t("err_download", lang)
         await query.edit_message_text(msg)
 
     except Exception as e:
         logging.error("Unexpected error url=%s: %s", url, e, exc_info=True)
-        await query.edit_message_text("⚠️ Something went wrong. Please try again.")
+        await query.edit_message_text(t("err_unknown", lang))
 
     finally:
         _active_downloads.discard(user_id)
