@@ -367,7 +367,7 @@ async def handle_choice(update: Update, context: ContextTypes.DEFAULT_TYPE):
             f"⏱ {minutes}:{seconds:02d}  ·  {platform_label}\n"
             f"🎤 {info.get('uploader', '—')}\n"
             f"━━━━━━━━━━━━━━━━━━━\n"
-            f"🎧 @muzebot",
+            f"🎧 @ggp1xmusic_bot",
             parse_mode="HTML",
         )
 
